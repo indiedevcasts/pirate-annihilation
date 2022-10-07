@@ -18,7 +18,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn_bundle(Camera2dBundle::default());
 
     commands.spawn_bundle(LdtkWorldBundle {
-        ldtk_handle: asset_server.load("map.ldtk"),
+        ldtk_handle: asset_server.load("boatmap.ldtk"),
         ..Default::default()
     });
 }
