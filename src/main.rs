@@ -1,6 +1,8 @@
 use bevy::{log::LogSettings, prelude::*};
 use bevy_ecs_ldtk::prelude::*;
 
+use heron::prelude::*;
+
 fn main() {
     App::new()
         .insert_resource(LogSettings {
@@ -11,6 +13,7 @@ fn main() {
         .add_plugin(LdtkPlugin)
         .add_startup_system(setup)
         .add_system(camera_fit_inside_current_level)
+        .add_system(movement)
         .insert_resource(LevelSelection::Index(0))
         .register_ldtk_entity::<PlayerBundle>("Player")
         .run();
@@ -33,12 +36,17 @@ pub struct Player;
 
 #[derive(Clone, Default, Bundle, LdtkEntity)]
 pub struct PlayerBundle {
+    #[sprite_bundle("player.png")]
+    #[bundle]
+    pub sprite_bundle: SpriteBundle,
     pub player: Player,
     #[worldly]
     pub worldly: Worldly,
     // The whole EntityInstance can be stored directly as an EntityInstance component
     #[from_entity_instance]
     entity_instance: EntityInstance,
+
+    velocity: Velocity,
 }
 
 const ASPECT_RATIO: f32 = 16. / 9.;
@@ -65,7 +73,6 @@ pub fn camera_fit_inside_current_level(
     }) = player_query.get_single()
     {
         let player_translation = *player_translation;
-        debug!("player translation : {player_translation:?}");
 
         let (mut orthographic_projection, mut camera_transform) = camera_query.single_mut();
 
@@ -103,5 +110,20 @@ pub fn camera_fit_inside_current_level(
                 }
             }
         }
+    }
+}
+
+pub fn movement(input: Res<Input<KeyCode>>, mut query: Query<&mut Velocity, With<Player>>) {
+    for mut velocity in query.iter_mut() {
+        let right = if input.pressed(KeyCode::D) { 1. } else { 0. };
+        let left = if input.pressed(KeyCode::Q) { 1. } else { 0. };
+
+        velocity.linear.x = (right - left) * 200.;
+
+        let up = if input.pressed(KeyCode::Z) { 1. } else { 0. };
+        let down = if input.pressed(KeyCode::S) { 1. } else { 0. };
+
+        debug!("movement : {left}, {right}, {up}, {down}");
+        velocity.linear.y = (up - down) * 200.;
     }
 }
