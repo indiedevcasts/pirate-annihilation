@@ -16,6 +16,5 @@ pub struct PlayerBundle {
     // The whole EntityInstance can be stored directly as an EntityInstance component
     #[from_entity_instance]
     entity_instance: EntityInstance,
-
     velocity: Velocity,
 }

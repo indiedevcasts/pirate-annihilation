@@ -1,19 +1,37 @@
-use bevy::prelude::{debug, Input, KeyCode, Query, Res, With};
+use bevy::prelude::{Input, KeyCode, Query, Res, Transform, Vec3, With};
 use heron::Velocity;
 
 use crate::components::player::Player;
 
-pub fn movement(input: Res<Input<KeyCode>>, mut query: Query<&mut Velocity, With<Player>>) {
-    for mut velocity in query.iter_mut() {
-        let right = if input.pressed(KeyCode::D) { 1. } else { 0. };
-        let left = if input.pressed(KeyCode::Q) { 1. } else { 0. };
+const TIME_STEP: f32 = 1.0 / 60.0;
 
-        velocity.linear.x = (right - left) * 200.;
+pub fn movement(
+    input: Res<Input<KeyCode>>,
+    mut query: Query<(&mut Velocity, &mut Transform), With<Player>>,
+) {
+    for (mut velocity, mut transform) in query.iter_mut() {
+        let mut rotation_factor = 0.0;
+        let mut movement_factor = 0.0;
+        if input.pressed(KeyCode::Z) {
+            movement_factor -= 1.0;
+            if input.pressed(KeyCode::D) {
+                rotation_factor -= 0.5;
+            }
+            if input.pressed(KeyCode::Q) {
+                rotation_factor += 0.5;
+            }
+        }
 
-        let up = if input.pressed(KeyCode::Z) { 1. } else { 0. };
-        let down = if input.pressed(KeyCode::S) { 1. } else { 0. };
+        transform.rotate_z(rotation_factor * f32::to_radians(360.0) * TIME_STEP);
 
-        debug!("movement : {left}, {right}, {up}, {down}");
-        velocity.linear.y = (up - down) * 200.;
+        // get the ship's forward vector by applying the current rotation to the ships initial facing vector
+        let movement_direction = transform.rotation * Vec3::Y;
+
+        // get the distance the ship will move based on direction, the ship's movement speed and delta time
+        let movement_distance = movement_factor * 500.0 * TIME_STEP;
+
+        let translation_delta = movement_direction * movement_distance;
+
+        transform.translation += translation_delta;
     }
 }
