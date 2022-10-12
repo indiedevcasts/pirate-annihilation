@@ -1,36 +1,33 @@
-use bevy::prelude::*;
+use bevy::{log::LogSettings, prelude::*};
+use bevy_ecs_ldtk::prelude::*;
+
+mod components;
+mod systems;
+
+use components::player::PlayerBundle;
+use systems::{camera_system, player_system};
 
 fn main() {
     App::new()
+        .insert_resource(LogSettings {
+            filter: "info,wgpu_core=warn,wgpu_hal=error,magnet=debug".into(),
+            level: bevy::log::Level::INFO,
+        })
         .add_plugins(DefaultPlugins)
-        .add_startup_system(add_people)
-        .add_system(greet_people)
+        .add_plugin(LdtkPlugin)
+        .add_startup_system(setup)
+        .add_system(camera_system::fit_inside_current_level)
+        .add_system(player_system::movement)
+        .insert_resource(LevelSelection::Index(0))
+        .register_ldtk_entity::<PlayerBundle>("Player")
         .run();
 }
 
-#[derive(Component)]
-struct Person;
-
-#[derive(Component)]
-struct Name(String);
-
-fn add_people(mut commands: Commands) {
-    commands
-        .spawn()
-        .insert(Person)
-        .insert(Name("Elaina Proctor".to_string()));
-    commands
-        .spawn()
-        .insert(Person)
-        .insert(Name("Renzo Hume".to_string()));
-    commands
-        .spawn()
-        .insert(Person)
-        .insert(Name("Zayna Nieves".to_string()));
-}
-
-fn greet_people(query: Query<&Name, With<Person>>) {
-    for name in query.iter() {
-        println!("hello {}!", name.0);
-    }
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+    asset_server.watch_for_changes().unwrap();
+    commands.spawn_bundle(Camera2dBundle::default());
+    commands.spawn_bundle(LdtkWorldBundle {
+        ldtk_handle: asset_server.load("boatmap.ldtk"),
+        ..Default::default()
+    });
 }
