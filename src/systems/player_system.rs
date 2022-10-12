@@ -1,15 +1,11 @@
 use bevy::prelude::{Input, KeyCode, Query, Res, Transform, Vec3, With};
-use heron::Velocity;
 
 use crate::components::player::Player;
 
 const TIME_STEP: f32 = 1.0 / 60.0;
 
-pub fn movement(
-    input: Res<Input<KeyCode>>,
-    mut query: Query<(&mut Velocity, &mut Transform), With<Player>>,
-) {
-    for (mut velocity, mut transform) in query.iter_mut() {
+pub fn movement(input: Res<Input<KeyCode>>, mut query: Query<&mut Transform, With<Player>>) {
+    for mut transform in query.iter_mut() {
         let mut rotation_factor = 0.0;
         let mut movement_factor = 0.0;
         if input.pressed(KeyCode::Z) {
