@@ -1,17 +1,17 @@
 use crate::components::player::Player;
 use bevy::prelude::*;
 
-const MOVEMENT_SPEED: f32 = 500.;
+const MOVEMENT_SPEED: f32 = 200.;
 const MAX_DEGREES: f32 = 360.;
-const ROTATION_STEP: f32 = 0.5;
+const ROTATION_STEP: f32 = 0.2;
 const FORWARD_STEP: f32 = 1.;
 
 pub fn movement(
     time: Res<Time>,
     input: Res<Input<KeyCode>>,
-    mut query: Query<&mut Transform, With<Player>>,
+    mut player_query: Query<&mut Transform, With<Player>>,
 ) {
-    for mut transform in query.iter_mut() {
+    if let Ok(mut transform) = player_query.get_single_mut() {
         let mut rotation_input = 0.;
         let mut forward_input = 0.;
 
