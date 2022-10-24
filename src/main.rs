@@ -1,3 +1,4 @@
+use bevy::render::camera::ScalingMode;
 use bevy::{log::LogSettings, prelude::*};
 use bevy_ecs_ldtk::prelude::*;
 
@@ -25,9 +26,17 @@ fn main() {
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     asset_server.watch_for_changes().unwrap();
-    commands.spawn_bundle(Camera2dBundle::default());
+    commands.spawn_bundle(camera_setup());
     commands.spawn_bundle(LdtkWorldBundle {
         ldtk_handle: asset_server.load("boatmap.ldtk"),
         ..Default::default()
     });
+}
+
+fn camera_setup() -> Camera2dBundle {
+    let mut camera = Camera2dBundle::default();
+    camera.projection.scaling_mode = ScalingMode::WindowSize;
+    camera.projection.scale *= 1.5;
+
+    camera
 }
