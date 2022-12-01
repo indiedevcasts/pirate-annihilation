@@ -17,6 +17,7 @@ pub fn fit_inside_current_level(
     >,
     level_selection: Res<LevelSelection>,
     ldtk_levels: Res<Assets<LdtkLevel>>,
+    time: Res<Time>,
 ) {
     if let Ok(Transform {
         translation: player_translation,
@@ -25,7 +26,6 @@ pub fn fit_inside_current_level(
     {
         let player_translation = *player_translation;
         let (orthographic_projection, mut camera_transform) = camera_query.single_mut();
-
         for (_, level_handle) in level_query.iter() {
             if let Some(ldtk_level) = ldtk_levels.get(level_handle) {
                 // The boundaries used to clamp the camera in the level
@@ -35,14 +35,26 @@ pub fn fit_inside_current_level(
                 );
                 let level = &ldtk_level.level;
                 if level_selection.is_match(&0, level) {
-                    camera_transform.translation.x = (player_translation.x).clamp(
+                    let x = (player_translation.x).clamp(
                         x_boundary_distance,
                         level.px_wid as f32 - x_boundary_distance,
                     );
-                    camera_transform.translation.y = (player_translation.y).clamp(
+                    let y = (player_translation.y).clamp(
                         y_boundary_distance,
                         level.px_hei as f32 - y_boundary_distance,
                     );
+
+                    let direction = Vec3::new(x, y, camera_transform.translation.z);
+
+                    let smooth_damp = magnet::core::vec3::smooth_damp(
+                        camera_transform.translation,
+                        direction,
+                        Vec3::ZERO,
+                        0.2,
+                        f32::INFINITY,
+                        time.delta_seconds(),
+                    );
+                    camera_transform.translation = smooth_damp;
                 }
             }
         }

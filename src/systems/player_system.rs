@@ -1,7 +1,7 @@
 use crate::components::player::Player;
 use bevy::prelude::*;
 
-const MOVEMENT_SPEED: f32 = 200.;
+const MOVEMENT_SPEED: f32 = 300.;
 const MAX_DEGREES: f32 = 360.;
 const ROTATION_STEP: f32 = 0.2;
 const FORWARD_STEP: f32 = 1.;
