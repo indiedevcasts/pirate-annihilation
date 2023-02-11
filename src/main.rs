@@ -1,15 +1,16 @@
-use bevy::render::camera::ScalingMode;
+use bevy::render::camera::{CameraProjection, ScalingMode};
 use bevy::{
     log::{Level, LogPlugin},
     prelude::*,
 };
+use dolly::prelude::*;
 
+mod camera;
 mod components;
 mod systems;
 
-use components::player::PlayerBundle;
+use camera::CameraController;
 use systems::hex_map::HexGrid;
-use systems::{camera_system, player_system};
 
 fn main() {
     App::new()
@@ -25,6 +26,7 @@ fn main() {
                 }),
         )
         .add_startup_system(setup)
+        .add_system(camera::move_free_camera)
         .run();
 }
 
@@ -34,12 +36,23 @@ fn setup(
     materials: ResMut<Assets<StandardMaterial>>,
 ) {
     commands.spawn(camera_setup());
+    commands.spawn(camera_controller_setup());
     let mut hex_grid = HexGrid::new(6, 6);
     hex_grid.generate(meshes, materials);
 
     for cell in hex_grid.cells {
         commands.spawn(cell);
     }
+}
+
+fn camera_controller_setup() -> CameraController {
+    let rig = CameraRig::builder()
+        .with(Position::new(Vec3::Y))
+        .with(YawPitch::new())
+        .with(Smooth::new_position_rotation(1.0, 1.0))
+        .build();
+
+    CameraController { rig }
 }
 
 fn camera_setup() -> Camera3dBundle {

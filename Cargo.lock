@@ -1277,6 +1277,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bd0c93bb4b0c6d9b77f4435b0ae98c24d17f1c45b2ff844c6151a07256ca923b"
 
 [[package]]
+name = "dolly"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e8bd01a2e160b741ea8fe693264718dda9e75a85e3fd38269b97e76361077f11"
+dependencies = [
+ "glam",
+]
+
+[[package]]
 name = "downcast-rs"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1909,6 +1918,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_ecs_ldtk",
+ "dolly",
 ]
 
 [[package]]
