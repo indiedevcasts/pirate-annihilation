@@ -1,6 +1,16 @@
 use crate::components::player::Player;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::{LdtkLevel, LevelSelection};
+use dolly::prelude::*;
+
+const MOVEMENT_SPEED: f32 = 10.;
+const HORIZONTAL_STEP: f32 = 0.2;
+const VERTICAL_STEP: f32 = 1.;
+
+#[derive(Component)]
+pub struct CameraController {
+    pub rig: CameraRig,
+}
 
 pub fn fit_inside_current_level(
     mut camera_query: Query<
@@ -59,4 +69,48 @@ pub fn fit_inside_current_level(
             }
         }
     }
+}
+
+pub fn move_free_camera(
+    mut camera_query: Query<(&mut Transform, With<Camera>)>,
+    time: Res<Time>,
+    input: Res<Input<KeyCode>>,
+) {
+    if let Ok(mut camera_transform) = camera_query.get_single_mut() {
+        debug!("camera_transform : {:?}", camera_transform);
+    }
+
+    // if let Ok(mut camera) = camera.get_single_mut() {
+    //     let mut horizontal_move = 0.;
+    //     let mut vertical_move = 0.;
+
+    //     if input.pressed(KeyCode::Z) {
+    //         vertical_move = VERTICAL_STEP;
+    //     }
+
+    //     if input.pressed(KeyCode::D) {
+    //         horizontal_move = HORIZONTAL_STEP;
+    //     }
+
+    //     if input.pressed(KeyCode::Q) {
+    //         horizontal_move = -HORIZONTAL_STEP;
+    //     }
+
+    //     let move_vec = camera.rig.final_transform.rotation
+    //         * Vec3::new(horizontal_move, 0., vertical_move).clamp_length_max(1.0)
+    //         * MOVEMENT_SPEED;
+
+    //     camera
+    //         .rig
+    //         .driver_mut::<Position>()
+    //         .translate(move_vec * time.delta_seconds() * 10.0);
+    //     let rig_transform = camera.rig.update(time.delta_seconds());
+    //     let to_cam_transform = Transform {
+    //         translation: rig_transform.position,
+    //         rotation: rig_transform.rotation,
+    //         ..default()
+    //     };
+
+    //     camera.cam.transform = to_cam_transform;
+    // }
 }
