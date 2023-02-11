@@ -3,12 +3,12 @@ use bevy::{
     log::{Level, LogPlugin},
     prelude::*,
 };
-use bevy_ecs_ldtk::prelude::*;
 
 mod components;
 mod systems;
 
 use components::player::PlayerBundle;
+use systems::hex_map::HexGrid;
 use systems::{camera_system, player_system};
 
 fn main() {
@@ -24,27 +24,27 @@ fn main() {
                     ..default()
                 }),
         )
-        .add_plugin(LdtkPlugin)
         .add_startup_system(setup)
-        .add_system(camera_system::fit_inside_current_level)
-        .add_system(player_system::movement)
-        .insert_resource(LevelSelection::Index(0))
-        .register_ldtk_entity::<PlayerBundle>("Player")
         .run();
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup(
+    mut commands: Commands,
+    meshes: ResMut<Assets<Mesh>>,
+    materials: ResMut<Assets<StandardMaterial>>,
+) {
     commands.spawn(camera_setup());
-    commands.spawn(LdtkWorldBundle {
-        ldtk_handle: asset_server.load("boatmap.ldtk"),
-        ..Default::default()
-    });
+    let mut hex_grid = HexGrid::new(6, 6);
+    hex_grid.generate(meshes, materials);
+
+    for cell in hex_grid.cells {
+        commands.spawn(cell);
+    }
 }
 
-fn camera_setup() -> Camera2dBundle {
-    let mut camera = Camera2dBundle::default();
-    camera.projection.scaling_mode = ScalingMode::WindowSize;
-    camera.projection.scale *= 1.5;
-
-    camera
+fn camera_setup() -> Camera3dBundle {
+    Camera3dBundle {
+        transform: Transform::from_xyz(0., 5., 20.).looking_at(Vec3::ZERO, Vec3::Y),
+        ..default()
+    }
 }
