@@ -1,10 +1,10 @@
 use crate::components::player::Player;
-use bevy::prelude::*;
+use bevy::{input::mouse::MouseMotion, prelude::*};
 use bevy_ecs_ldtk::{LdtkLevel, LevelSelection};
 use dolly::prelude::*;
 
 const MOVEMENT_SPEED: f32 = 10.;
-const HORIZONTAL_STEP: f32 = 0.2;
+const HORIZONTAL_STEP: f32 = 1.;
 const VERTICAL_STEP: f32 = 1.;
 
 #[derive(Component, Debug)]
@@ -76,6 +76,8 @@ pub fn move_free_camera(
     mut camera_controller: Query<&mut CameraController>,
     time: Res<Time>,
     input: Res<Input<KeyCode>>,
+    mouse_input: Res<Input<MouseButton>>,
+    mut mouse_motion: EventReader<MouseMotion>,
 ) {
     let (mut camera_transform, _) = match camera.get_single_mut() {
         Ok(transform) => transform,
@@ -112,12 +114,26 @@ pub fn move_free_camera(
 
     debug!("camera_transform : {:?}", camera_transform);
 
+    // camera rotation
+    if mouse_input.pressed(MouseButton::Right) {
+        for mouse_event in mouse_motion.iter() {
+            camera_controller
+                .rig
+                .driver_mut::<YawPitch>()
+                .rotate_yaw_pitch(-0.3 * mouse_event.delta.x, -0.3 * mouse_event.delta.y);
+        }
+    }
+
+    // camera movement
     camera_controller
         .rig
         .driver_mut::<Position>()
         .translate(move_vec * time.delta_seconds() * 10.0);
+
+    // run all the camera rig drivers and retrieve the final transform
     let rig_transform = camera_controller.rig.update(time.delta_seconds());
 
+    // apply the camera rig info to the bevy camera
     camera_transform.translation = rig_transform.position;
     camera_transform.rotation = rig_transform.rotation;
 }
