@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use bevy::render::camera::{CameraProjection, ScalingMode};
 use bevy::{
     log::{Level, LogPlugin},
@@ -35,6 +37,7 @@ fn setup(
     meshes: ResMut<Assets<Mesh>>,
     materials: ResMut<Assets<StandardMaterial>>,
 ) {
+    commands.spawn(light_setup());
     commands.spawn(camera_setup());
     commands.spawn(camera_controller_setup());
     let mut hex_grid = HexGrid::new(6, 6);
@@ -42,6 +45,22 @@ fn setup(
 
     for cell in hex_grid.cells {
         commands.spawn(cell);
+    }
+}
+
+fn light_setup() -> DirectionalLightBundle {
+    DirectionalLightBundle {
+        directional_light: DirectionalLight {
+            shadows_enabled: true,
+            ..default()
+        },
+        transform: Transform {
+            translation: Vec3::new(0.0, 2.0, 0.0),
+            // π = 180° (in radians). π/4 = 45°.
+            rotation: Quat::from_rotation_x(-PI / 4.),
+            ..default()
+        },
+        ..default()
     }
 }
 
