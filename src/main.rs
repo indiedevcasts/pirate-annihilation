@@ -1,18 +1,17 @@
-use std::f32::consts::PI;
-
-use bevy::render::camera::{CameraProjection, ScalingMode};
 use bevy::{
     log::{Level, LogPlugin},
     prelude::*,
 };
 use dolly::prelude::*;
+use std::f32::consts::PI;
 
 mod camera;
 mod components;
+mod hex;
 mod systems;
 
 use camera::CameraController;
-use systems::hex_map::HexGrid;
+use hex::HexGrid;
 
 fn main() {
     App::new()
@@ -40,12 +39,7 @@ fn setup(
     commands.spawn(light_setup());
     commands.spawn(camera_setup());
     commands.spawn(camera_controller_setup());
-    let mut hex_grid = HexGrid::new(6, 6);
-    hex_grid.generate(meshes, materials);
-
-    for cell in hex_grid.cells {
-        commands.spawn(cell);
-    }
+    HexGrid::new(6, 6).render(&mut commands, meshes, materials);
 }
 
 fn light_setup() -> DirectionalLightBundle {
