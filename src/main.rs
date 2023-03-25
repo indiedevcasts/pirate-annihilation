@@ -7,9 +7,11 @@ use std::f32::consts::PI;
 
 mod camera;
 mod components;
+mod core;
 mod hex;
 mod systems;
 
+use crate::core::gizmo;
 use camera::CameraController;
 use hex::HexGrid;
 
@@ -60,8 +62,8 @@ fn light_setup() -> DirectionalLightBundle {
 
 fn camera_controller_setup() -> CameraController {
     let rig = CameraRig::builder()
-        .with(Position::new(Vec3::Y))
-        .with(YawPitch::new())
+        .with(Position::new(Vec3::new(50., 70., 80.)))
+        .with(YawPitch::new().pitch_degrees(-35.))
         .with(Smooth::new_position_rotation(1.0, 1.0))
         .build();
 
@@ -69,8 +71,18 @@ fn camera_controller_setup() -> CameraController {
 }
 
 fn camera_setup() -> Camera3dBundle {
-    Camera3dBundle {
-        transform: Transform::from_xyz(0., 5., 20.).looking_at(Vec3::ZERO, Vec3::Y),
-        ..default()
-    }
+    Camera3dBundle::default()
+}
+
+fn debug_setup(
+    commands: &mut Commands,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    materials: &mut ResMut<Assets<StandardMaterial>>,
+) {
+    gizmo::axis::setup(
+        commands,
+        meshes,
+        materials,
+        Transform::from_translation(Vec3::ZERO),
+    );
 }
