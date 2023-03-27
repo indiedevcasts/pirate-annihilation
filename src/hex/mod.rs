@@ -1,9 +1,25 @@
 //! Hexagonal map module.
 //!
-//! Based on the excellent tutorial written by Jasper Flick.
-//! See https://catlikecoding.com/unity/tutorials/hex-map
+//! Based on the excellent tutorials written respectively by
+//! Jasper Flick and by Amit Patel:
+//!
+//! - https://catlikecoding.com/unity/tutorials/hex-map
+//! - https://www.redblobgames.com/grids/hexagons
 
-use bevy::{prelude::*, render::render_resource::PrimitiveTopology};
+use bevy::{
+    prelude::*,
+    render::{mesh::Indices, render_resource::PrimitiveTopology},
+};
+
+// --> √3 = 1.73205080757
+// --> √3/2 = 0.86602540378
+// --> √3/2 * 10 = 8,660254037844386
+// --> 5√3 = 8,660254037844386
+
+// red
+// horiz = width = sqrt(3) * size
+// horiz = width = 0.86602540378 * 10
+// horiz = width = 8,660254037844386
 
 /// Hexagon's outer radius.
 const OUTER_RADIUS: f32 = 10.;
@@ -18,13 +34,13 @@ const INNER_DIAMETER: f32 = INNER_RADIUS * 2.;
 
 /// Hexagon's corners.
 /// Orientation is pointy side up ⬡.
-const CORNERS: [Vec3; 6] = [
-    Vec3::new(0., 0., OUTER_RADIUS),
-    Vec3::new(INNER_RADIUS, 0., 0.5 * OUTER_RADIUS),
-    Vec3::new(INNER_RADIUS, 0., -0.5 * OUTER_RADIUS),
-    Vec3::new(0., 0., -OUTER_RADIUS),
-    Vec3::new(-INNER_RADIUS, 0., -0.5 * OUTER_RADIUS),
-    Vec3::new(-INNER_RADIUS, 0., 0.5 * OUTER_RADIUS),
+const CORNERS: [[f32; 3]; 6] = [
+    [0., 0., OUTER_RADIUS],
+    [INNER_RADIUS, 0., 0.5 * OUTER_RADIUS],
+    [INNER_RADIUS, 0., -0.5 * OUTER_RADIUS],
+    [0., 0., -OUTER_RADIUS],
+    [-INNER_RADIUS, 0., -0.5 * OUTER_RADIUS],
+    [-INNER_RADIUS, 0., 0.5 * OUTER_RADIUS],
 ];
 
 #[derive(Clone, Component)]
@@ -44,14 +60,34 @@ impl HexCell {
         materials: &mut ResMut<Assets<StandardMaterial>>,
     ) -> Self {
         let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
-        // The local position is the center of the hex cell.
-        let vertices: Vec<Vec3> = vec![position, position + CORNERS[0], position + CORNERS[1]];
-        mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vertices);
 
-        let mut triangles: Vec<u32> = Vec::new();
+        let vertices: Vec<[f32; 3]> = vec![
+            [0., 0., 0.], // the local center of the cell
+            CORNERS[0],
+            CORNERS[1],
+            CORNERS[2],
+            CORNERS[3],
+            CORNERS[4],
+            CORNERS[5],
+        ];
+
+        // Each index is expressed in a clockwise way so the
+        // side facing the camera is rendered.
+        let indices = Indices::U16(vec![
+            0, 1, 2, // 6
+            0, 2, 3, // 1
+            0, 3, 4, // 3
+            0, 4, 5, // 4
+            0, 5, 6, // 5
+            0, 6, 1, // 6
+        ]);
+        let normals = vec![[0., 1., 0.]; 7];
+        mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vertices);
+        mesh.set_indices(Some(indices));
+        mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
 
         let pbr_bundle = PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Plane { size: OUTER_RADIUS })),
+            mesh: meshes.add(mesh),
             material: materials.add(color.into()),
             transform: Transform::from_translation(position),
             ..default()
@@ -63,10 +99,6 @@ impl HexCell {
             color,
             pbr_bundle,
         }
-    }
-
-    pub fn render() {
-        todo!()
     }
 }
 
@@ -105,16 +137,15 @@ impl HexGrid {
                 // we need to inverse the z position.
                 position.z = -z * (OUTER_RADIUS * 1.5);
 
+                // starting position
                 let color = if x == 0. && z == 0. {
                     Color::ORANGE_RED
-                } else if x == 1. && z == 0. {
-                    Color::GREEN
-                } else if x == 0. && z == 1. {
-                    Color::DARK_GREEN
-                } else if x % 2. == 0. {
-                    Color::ALICE_BLUE
+                // every even lines (considering camera facing z)
+                } else if z % 2. == 0. {
+                    Color::BLUE
+                // every odd lines (considering camera facing z)
                 } else {
-                    Color::ORANGE
+                    Color::DARK_GREEN
                 };
 
                 let cell = HexCell::new((x, z), position, color, &mut meshes, &mut materials);
