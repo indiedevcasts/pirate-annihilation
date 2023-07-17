@@ -1,9 +1,10 @@
 use bevy::{
+    asset::ChangeWatcher,
     log::{Level, LogPlugin},
     prelude::*,
 };
 use dolly::prelude::*;
-use std::f32::consts::PI;
+use std::{f32::consts::PI, time::Duration};
 
 mod camera;
 mod components;
@@ -11,7 +12,6 @@ mod core;
 mod hex;
 mod systems;
 
-use crate::core::gizmo;
 use camera::CameraController;
 use hex::HexGrid;
 
@@ -24,12 +24,12 @@ fn main() {
                     level: Level::INFO,
                 })
                 .set(AssetPlugin {
-                    watch_for_changes: true,
+                    watch_for_changes: ChangeWatcher::with_delay(Duration::from_millis(500)),
                     ..default()
                 }),
         )
-        .add_startup_system(setup)
-        .add_system(camera::move_free_camera)
+        .add_systems(Startup, setup)
+        .add_systems(Update, camera::move_free_camera)
         .run();
 }
 
@@ -72,17 +72,4 @@ fn camera_controller_setup() -> CameraController {
 
 fn camera_setup() -> Camera3dBundle {
     Camera3dBundle::default()
-}
-
-fn debug_setup(
-    commands: &mut Commands,
-    meshes: &mut ResMut<Assets<Mesh>>,
-    materials: &mut ResMut<Assets<StandardMaterial>>,
-) {
-    gizmo::axis::setup(
-        commands,
-        meshes,
-        materials,
-        Transform::from_translation(Vec3::ZERO),
-    );
 }

@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bevy = { version = "0.9.1" }
-dolly = "0.4.0"
+bevy = { version = "0.11", features = ["dynamic_linking"] }
+dolly = "0.4.2"
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]
