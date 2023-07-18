@@ -1,16 +1,16 @@
+use super::CORNERS;
+use crate::materials::BiomeMaterial;
 use bevy::{
     prelude::*,
     render::{mesh::Indices, render_resource::PrimitiveTopology},
 };
-
-use super::CORNERS;
 
 #[derive(Clone, Component)]
 pub struct HexCell {
     pub coordinates: (f32, f32),
     pub transform: Transform,
     pub color: Color,
-    pub pbr_bundle: PbrBundle,
+    pub mesh_bundle: MaterialMeshBundle<BiomeMaterial>,
 }
 
 impl HexCell {
@@ -19,7 +19,7 @@ impl HexCell {
         transform: Transform,
         color: Color,
         meshes: &mut ResMut<Assets<Mesh>>,
-        materials: &mut ResMut<Assets<StandardMaterial>>,
+        materials: &mut ResMut<Assets<BiomeMaterial>>,
     ) -> Self {
         let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
 
@@ -48,9 +48,12 @@ impl HexCell {
         mesh.set_indices(Some(indices));
         mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
 
-        let pbr_bundle = PbrBundle {
+        let mesh_bundle = MaterialMeshBundle {
             mesh: meshes.add(mesh),
-            material: materials.add(color.into()),
+            material: materials.add(BiomeMaterial {
+                color,
+                alpha_mode: AlphaMode::Blend,
+            }),
             transform,
             ..default()
         };
@@ -59,7 +62,7 @@ impl HexCell {
             coordinates,
             transform,
             color,
-            pbr_bundle,
+            mesh_bundle,
         }
     }
 }

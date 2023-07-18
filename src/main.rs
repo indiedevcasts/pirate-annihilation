@@ -4,30 +4,32 @@ use bevy::{
     prelude::*,
 };
 use dolly::prelude::*;
+use materials::BiomeMaterial;
 use std::{f32::consts::PI, time::Duration};
 
 mod camera;
 mod components;
 mod core;
 mod hex;
+mod materials;
 mod systems;
 
 use camera::CameraController;
 use hex::HexGrid;
 
 fn main() {
+    let default_plugins = DefaultPlugins
+        .set(LogPlugin {
+            filter: "info,wgpu_core=warn,wgpu_hal=error,magnet=debug".into(),
+            level: Level::INFO,
+        })
+        .set(AssetPlugin {
+            watch_for_changes: ChangeWatcher::with_delay(Duration::from_millis(500)),
+            ..default()
+        });
+
     App::new()
-        .add_plugins(
-            DefaultPlugins
-                .set(LogPlugin {
-                    filter: "info,wgpu_core=warn,wgpu_hal=error,magnet=debug".into(),
-                    level: Level::INFO,
-                })
-                .set(AssetPlugin {
-                    watch_for_changes: ChangeWatcher::with_delay(Duration::from_millis(500)),
-                    ..default()
-                }),
-        )
+        .add_plugins((default_plugins, MaterialPlugin::<BiomeMaterial>::default()))
         .add_systems(Startup, setup)
         .add_systems(Update, camera::move_free_camera)
         .run();
@@ -36,7 +38,7 @@ fn main() {
 fn setup(
     mut commands: Commands,
     meshes: ResMut<Assets<Mesh>>,
-    materials: ResMut<Assets<StandardMaterial>>,
+    materials: ResMut<Assets<BiomeMaterial>>,
 ) {
     commands.spawn(light_setup());
     commands.spawn(camera_setup());

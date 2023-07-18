@@ -1,3 +1,5 @@
+use crate::materials::BiomeMaterial;
+
 use super::{HexCell, INNER_DIAMETER, OUTER_RADIUS};
 use bevy::prelude::*;
 
@@ -21,7 +23,7 @@ impl HexGrid {
         &mut self,
         commands: &mut Commands,
         mut meshes: ResMut<Assets<Mesh>>,
-        mut materials: ResMut<Assets<StandardMaterial>>,
+        mut materials: ResMut<Assets<BiomeMaterial>>,
     ) {
         for z in 0..self.height {
             for x in 0..self.width {
@@ -54,7 +56,7 @@ impl HexGrid {
                     &mut meshes,
                     &mut materials,
                 );
-                commands.spawn(cell.pbr_bundle.clone());
+                commands.spawn(cell.mesh_bundle.clone());
 
                 self.cells.push(cell);
             }
