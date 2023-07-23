@@ -1,13 +1,13 @@
-use crate::materials::BiomeMaterial;
+use crate::{hex::hex_cell::HexCellMesh, materials::BiomeMaterial};
 
 use super::{HexCell, INNER_DIAMETER, OUTER_RADIUS};
 use bevy::prelude::*;
 
+// TODO: Certainly better to manage this as a resource
 #[derive(Default)]
 pub struct HexGrid {
     pub width: u8,
     pub height: u8,
-    pub cells: Vec<HexCell>,
 }
 
 impl HexGrid {
@@ -22,7 +22,7 @@ impl HexGrid {
     pub fn render(
         &mut self,
         commands: &mut Commands,
-        mut meshes: ResMut<Assets<Mesh>>,
+        meshes: &mut ResMut<Assets<Mesh>>,
         mut materials: ResMut<Assets<BiomeMaterial>>,
     ) {
         for z in 0..self.height {
@@ -49,16 +49,15 @@ impl HexGrid {
                     Color::DARK_GREEN
                 };
 
-                let cell = HexCell::new(
-                    (x, z),
+                let cell = HexCellMesh::new(
                     Transform::from_translation(position),
                     color,
-                    &mut meshes,
+                    meshes,
                     &mut materials,
                 );
-                commands.spawn(cell.mesh_bundle.clone());
-
-                self.cells.push(cell);
+                commands.spawn(cell.mesh_bundle.clone()).insert(HexCell {
+                    coordinates: (x, z),
+                });
             }
         }
     }
