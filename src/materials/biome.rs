@@ -4,7 +4,6 @@ use bevy::{
     render::render_resource::{AsBindGroup, ShaderRef},
 };
 
-// Material stuff for water
 #[derive(AsBindGroup, Clone, TypeUuid, TypePath)]
 #[uuid = "893943ca-25ab-11ee-ba8f-00155dce9400"]
 pub struct BiomeMaterial {

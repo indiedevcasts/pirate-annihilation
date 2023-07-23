@@ -3,16 +3,16 @@ use bevy::{
     log::{Level, LogPlugin},
     prelude::*,
 };
+use characters::traveler::{self, Traveler};
 use dolly::prelude::*;
 use materials::BiomeMaterial;
 use std::{f32::consts::PI, time::Duration};
 
 mod camera;
-mod components;
+mod characters;
 mod core;
 mod hex;
 mod materials;
-mod systems;
 
 use camera::CameraController;
 use hex::HexGrid;
@@ -31,19 +31,23 @@ fn main() {
     App::new()
         .add_plugins((default_plugins, MaterialPlugin::<BiomeMaterial>::default()))
         .add_systems(Startup, setup)
-        .add_systems(Update, camera::move_free_camera)
+        .add_systems(Update, (camera::move_free_camera, traveler::travel))
         .run();
 }
 
 fn setup(
     mut commands: Commands,
-    meshes: ResMut<Assets<Mesh>>,
-    materials: ResMut<Assets<BiomeMaterial>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    biome_materials: ResMut<Assets<BiomeMaterial>>,
+    mut std_materials: ResMut<Assets<StandardMaterial>>,
 ) {
     commands.spawn(light_setup());
     commands.spawn(camera_setup());
     commands.spawn(camera_controller_setup());
-    HexGrid::new(6, 6).render(&mut commands, meshes, materials);
+    HexGrid::new(6, 6).render(&mut commands, &mut meshes, biome_materials);
+    commands
+        .spawn(traveler_setup(&mut meshes, &mut std_materials))
+        .insert(Traveler::default());
 }
 
 fn light_setup() -> DirectionalLightBundle {
@@ -70,6 +74,17 @@ fn camera_controller_setup() -> CameraController {
         .build();
 
     CameraController { rig }
+}
+
+fn traveler_setup(
+    meshes: &mut ResMut<Assets<Mesh>>,
+    std_materials: &mut ResMut<Assets<StandardMaterial>>,
+) -> PbrBundle {
+    PbrBundle {
+        mesh: meshes.add(shape::Cube::default().into()),
+        material: std_materials.add(Color::BLACK.into()),
+        ..default()
+    }
 }
 
 fn camera_setup() -> Camera3dBundle {

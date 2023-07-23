@@ -5,17 +5,20 @@ use bevy::{
     render::{mesh::Indices, render_resource::PrimitiveTopology},
 };
 
-#[derive(Clone, Component)]
+#[derive(Component)]
 pub struct HexCell {
     pub coordinates: (f32, f32),
+}
+
+#[derive(Clone, Component)]
+pub struct HexCellMesh {
     pub transform: Transform,
     pub color: Color,
     pub mesh_bundle: MaterialMeshBundle<BiomeMaterial>,
 }
 
-impl HexCell {
+impl HexCellMesh {
     pub fn new(
-        coordinates: (f32, f32),
         transform: Transform,
         color: Color,
         meshes: &mut ResMut<Assets<Mesh>>,
@@ -59,7 +62,6 @@ impl HexCell {
         };
 
         Self {
-            coordinates,
             transform,
             color,
             mesh_bundle,
